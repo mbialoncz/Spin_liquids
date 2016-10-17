@@ -38,18 +38,29 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     DH[3:, 3:] = -(H/2) * np.identity(3)
     DA = np.zeros((6,6), dtype = complex)
     DF = np.zeros((6,6), dtype = complex)
+    DX = np.zeros((6,6), dtype = complex)
+    DZ = np.zeros((6,6), dtype = complex)
     
-    PA = J * Q  * np.matrix([[0, - 2 * np.sin(k3) * (1j), 2 * np.sin(k1) *(1j)],
+    PA = J * Q[0]  * np.matrix([[0, - 2 * np.sin(k3) * (1j), 2 * np.sin(k1) *(1j)],
                              [-2 * np.sin(k3) * 1j, 0, 2 * np.sin(k2) * 1j],
                               [2 * np.sin(k1) * 1j, 2 * np.sin(k2) * 1j, 0]])
     
-    PF1 = J * F1 * np.matrix([[0, 2* np.cos(k3), 2 * np.cos(k1)],
+    PF1 = J * F1[0] * np.matrix([[0, 2* np.cos(k3), 2 * np.cos(k1)],
                                [2 * np.cos(k3), 0, 2 * np.cos(k2)],
                                 [2 * np.cos(k1), 2 * np.cos(k2), 0]])
                                 
     PF2 = 1j * J * F2 * np.matrix([[0, 2 * np.cos(k3), -2 * np.cos(k1)], 
                                    [-2 * np.cos(k3), 0, 2 * np.cos(k2)], 
-                                     [2 * np.cos(k1), -2 * np.cos(k2), 0]]) 
+                                     [2 * np.cos(k1), -2 * np.cos(k2), 0]])
+                            
+    PX = J * Q[1] * np.matrix([[0, - 2 * np.sin(k3) * (1j),  -2 * np.sin(k1) *(1j)],
+                             [2 * np.sin(k3) * 1j, 0, 2 * np.sin(k2) * 1j],
+                              [2 * np.sin(k1) * 1j, - 2 * np.sin(k2) * 1j, 0]])
+                              
+                             
+    PZ1 = J * F1[1] * np.matrix([[0, 2 * np.cos(k3), -2 * np.cos(k1)], 
+                                   [-2 * np.cos(k3), 0, 2 * np.cos(k2)], 
+                                     [2 * np.cos(k1), -2 * np.cos(k2), 0]])
     
     DA[:3, 3:] = PA
     DA[3:, :3] = PA.H
@@ -57,9 +68,16 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     DF[:3, :3] = PF1 + PF2
     DF[3:, 3:] = PF1 + PF2
     
+    DX[:3, 3:] = PX
+    DX[3:, :3] = PX.H
+    
+    DZ[3:, 3:] = PZ1
+    DZ[:3, :3] = PZ1.H
+    
+    
     Dmu = mu * np.identity(6)
     
-    return 1/4 * (DF - DA) - DH +Dmu  
+    return 1/8 * (DF - DA + DX + DZ ) - DH +Dmu  
     
     
 
@@ -201,7 +219,7 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     elif ansatz == 'Sa1' or ansatz == 'Sa2' :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
     else : 
-        return result/(Ns**2) - J/4 * (2 * F1**2+ 2 * F2**2-2 * Q**2) - mu*(1.+kappa) - H/2
+        return result/(3 * Ns**2) - J/8 * (2 * F1**2+ 2 * F2**2 + 2*-2 * Q**2) - mu*(1.+kappa) - H/2
     
     
 def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
@@ -209,7 +227,7 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
      
      
-    
+     print M
      B = np.matrix(np.identity(dim))
      B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)    
      
