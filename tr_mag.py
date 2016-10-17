@@ -24,9 +24,11 @@ kappa = 1.
 H_values = np.arange(0,1,0.1)
 M_values = []
 
-for H in np.arange(0.0,3.1,0.05) :
+print HamiltonianMatrixSa1(1, 5, 0.2 , 0, 0, 0, 1., 1, 6)
+
+for H in np.arange(0.,0.1,0.1) :
         
-        f = lambda x: Energia(0,5, x[0], 0, 0, H, kappa,6,"Sa1")
+        f = lambda x: Energia(0,5, x[0], 0, 0, H, kappa,6,"K01")
         x00 = 0.2;
         x0 = np.zeros(1,dtype = float)
         x0[0] = x00
@@ -48,10 +50,10 @@ for H in np.arange(0.0,3.1,0.05) :
        
         M_values.append(M)
 
-#plt.xlabel('H')
-#plt.ylabel('M')
-#plt.plot(H_values, np.array(M_values))
-#plt.savefig('MagnetizationSa1')
+plt.xlabel('H')
+plt.ylabel('M')
+plt.plot(H_values, np.array(M_values))
+plt.savefig('MagnetizationSa1')
 
   
         

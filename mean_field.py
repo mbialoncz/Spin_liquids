@@ -17,6 +17,7 @@ import random
 
 J=2.0
 
+np.set_printoptions(precision=3, suppress=True)
 def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = 2*math.pi*n1/Ns
     k2 = 2*math.pi*n2/Ns
@@ -65,7 +66,7 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
 def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = math.pi*n1/Ns
     k2 = math.pi*n2/Ns
-    k3 = - k1- k2 
+    k3 = - k1 - k2 
     DH = np.identity(6)
     DH[3:, 3:] = - np.identity(3)
     DA = np.zeros((6,6), dtype = complex)
@@ -97,26 +98,40 @@ def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
 def HamiltonianMatrixSa1(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
     k1 =  math.pi*n1/Ns
     k2 =  math.pi*n2/Ns
-    k3 = - k1- k2 
-    DH = np.identity(6)
-    DH[3:, 3:] = - np.identity(3)
+    k3 = - k1 - k2 
+    DH = H * np.identity(6)
+    DH[3:, 3:] = - H * np.identity(3)
     DA = np.zeros((6,6), dtype = complex)
     
-    PA = J * Q * np.matrix([[0, np.exp(-k1* 1j)+ np.exp(k1 * 1j),-np.exp(-k3* 1j)- np.exp(k3 * 1j)],
-                              [-np.exp(-k1* 1j) - np.exp(k1 * 1j), 0, np.exp(-k2* 1j)+ np.exp(k2 * 1j) ],
-                                      [np.exp(-k3* 1j)+ np.exp(k3 * 1j), -np.exp(-k2 * 1j)- np.exp(k2 * 1j), 0]])
+#    PA1 = J * Q * np.matrix([[0, np.exp(-k1* 1j)+ np.exp(k1 * 1j),-np.exp(-k3* 1j)-np.exp(k3 * 1j)],
+#                              [-np.exp(-k1* 1j) - np.exp(k1 * 1j), 0, np.exp(-k2* 1j)+ np.exp(k2 * 1j) ],
+#                                      [np.exp(-k3 * 1j)+ np.exp(k3 * 1j), -np.exp(-k2 * 1j)- np.exp(k2 * 1j), 0]])
+#    
+#    PA = J * Q * np.matrix([[0, np.cos(k1),-np.cos(k3)],
+#                                [-np.cos(k1), 0, np.cos(k2) ],
+#                                     [np.cos(k3), -np.cos(k2), 0]])
+                                     
+    PA2 = J * np.matrix([[0, Q[0] *np.exp(-k1* 1j)+ Q[1] * np.exp(k1 * 1j),- Q[1] * np.exp(-k3* 1j) - Q[0] * np.exp(k3 * 1j)],
+                              [-Q[1] * np.exp(-k1* 1j) - Q[0] * np.exp(k1 * 1j), 0, Q[0] * np.exp(-k2* 1j)+ Q[1] * np.exp(k2 * 1j)],
+                                      [Q[0] * np.exp(-k3 * 1j)+ Q[1] * np.exp(k3 * 1j), - Q[1] * np.exp(-k2 * 1j)- Q[0] * np.exp(k2 * 1j), 0]])
     
-    DA[:3, 3:] = PA
-    DA[3:, :3] = PA.H
+    DA[:3, 3:] = PA2
+    DA[3:, :3] = PA2.H
     
     Dmu = mu * np.identity(6)
-    
+#    print PA
+#    print PA1
+#    print 1/2 * DA + Dmu - DH
     return 1/2 * DA + Dmu - DH
 
 def HamiltonianMatrixSa2(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
     k1 = 2 * math.pi*n1/Ns
     k2 = 2 * math.pi*n2/Ns
     k3 = - k1- k2 
+    
+    DH = H * np.identity(6)
+    DH[3:, 3:] = - H * np.identity(3)    
+    
     
     DA = np.zeros((6,6), dtype = complex)
     PA = J * Q * np.matrix([[0, np.exp(-k1* 1j) - np.exp(k1 * 1j),-np.exp(-k3* 1j) + np.exp(k3 * 1j)],
@@ -193,6 +208,7 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
      
+     
     
      B = np.matrix(np.identity(dim))
      B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)    
@@ -213,8 +229,8 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 
          
      
-     k1 = [np.square(np.absolute(w[:dim//2,i])).sum()-np.square(np.absolute(w[dim//2: ,i])).sum() for i in range(dim//2)]
-     k2 = [-np.square(np.absolute(w[:dim//2,i])).sum()+np.square(np.absolute(w[dim//2 : ,i])).sum() for i in range(dim//2,dim)]
+     k1 = [(np.square(np.absolute(w[:dim//2,i]))).sum()-(np.square(np.absolute(w[dim//2: ,i]))).sum() for i in range(dim//2)]
+     k2 = [-(np.square(np.absolute(w[:dim//2,i]))).sum()+(np.square(np.absolute(w[dim//2 : ,i]))).sum() for i in range(dim//2,dim)]
     
      k = k1 + k2 
      
@@ -229,10 +245,19 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      for i in range(dim//2,dim):
          U[:,i] = w[:,i]/np.sqrt(k[i])
          
-         
-#     print np.absolute(U[:dim/2,dim/2:]-U[dim/2:,:dim/2])
      
-#     print np.dot(np.dot(U.H,B),U)
+#     print np.absolute(U[:dim/2,dim/2:]-U[dim/2:,:dim/2])
+     AU = np.absolute(U)
+     
+     
+     if (AU[:3,3:] != AU[3:,:3]).all() :
+         print u
+#     print np.diagonal(np.dot(np.dot(U.H,M),U))
+#     print np.diagonal(np.dot(np.dot(lin.inv(U),np.dot(B,M)),U))
+     print np.absolute(U),"\n"
+     l1 = [(np.square(np.absolute(U[:dim//2,i]))).sum()-(np.square(np.absolute(U[dim//2: ,i]))).sum() for i in range(dim//2)]
+     l2 = [-(np.square(np.absolute(U[:dim//2,i]))).sum()+(np.square(np.absolute(U[dim//2 : ,i]))).sum() for i in range(dim//2,dim)]
+#     print l1+l2
      return U
      
 def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
