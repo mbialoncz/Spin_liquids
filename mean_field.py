@@ -59,8 +59,8 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
                               
                              
     PZ1 = J * F1[1] * np.matrix([[0, 2 * np.cos(k3), -2 * np.cos(k1)], 
-                                   [-2 * np.cos(k3), 0, 2 * np.cos(k2)], 
-                                     [2 * np.cos(k1), -2 * np.cos(k2), 0]])
+                                   [2 * np.cos(k3), 0, 2 * np.cos(k2)], 
+                                     [-2 * np.cos(k1), 2 * np.cos(k2), 0]])
     
     DA[:3, 3:] = PA
     DA[3:, :3] = PA.H
@@ -71,8 +71,8 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     DX[:3, 3:] = PX
     DX[3:, :3] = PX.H
     
-    DZ[3:, 3:] = PZ1
-    DZ[:3, :3] = PZ1.H
+    DZ[:3, 3:] = PZ1
+    DZ[3:, :3] = -PZ1
     
     
     Dmu = mu * np.identity(6)

@@ -31,4 +31,4 @@ from mean_field import *
 #
 #print minim.x
 #print minim.f
-BogolubovTransformation(2,5 , [0.2,1], [0.45,0], 1., 0, 1.5, 1., 6, 'K01') 
+BogolubovTransformation(2,5 , [0.2,1], [0.45,1], 1., 0, 1.5, 1., 6, 'K01') 
