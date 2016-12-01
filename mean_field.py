@@ -25,11 +25,13 @@ def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     M = np.zeros((2,2),dtype=complex)
     M[0,0] = mu + H/2
     M[1,1] = mu - H/2
-    M[0,1] = - J * Q * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
-    M[1,0] =  J * Q * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
+    M[0,1] = - J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
+    M[1,0] =  J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
     
     return M
-    
+
+#Q[1] - X real part
+#F1[1] - Z real part
 def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = math.pi*n1/Ns
     k2 = math.pi*n2/Ns
@@ -77,25 +79,25 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
     Dmu = mu * np.identity(6)
     
-    return 1/8 * (DF - DA + DX + DZ ) - DH +Dmu  
+    return - 1/2 *  DA - DH + Dmu  
     
     
 
 def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = math.pi*n1/Ns
     k2 = math.pi*n2/Ns
-    k3 = - k1 - k2 
-    DH = np.identity(6)
-    DH[3:, 3:] = - np.identity(3)
+    k3 = k1 + k2 
+    DH = (H/2) * np.identity(6)
+    DH[3:, 3:] = - (H/2) * np.identity(3)
     DA = np.zeros((6,6), dtype = complex)
     DF = np.zeros((6,6), dtype = complex)    
     
     
-    PA = J *  Q * np.matrix([[0, 2 * np.cos(k3), 2 * 1j * np.cos(k2)], 
+    PA = J *  Q[0] * np.matrix([[0, 2 * np.cos(k3), 2 * np.cos(k1)], 
                 [-2 * np.cos(k3), 0, 2 * np.cos(k2)], 
-                    [2 * 1j * np.cos(k1), -2 * np.cos(k2), 0]]) 
+                    [-2 * np.cos(k1), -2 * np.cos(k2), 0]]) 
 
-    PF1 = J * F1 * np.matrix([[0, 2 * np.cos(k3), -2 * 1j * np.cos(k2)], 
+    PF1 = J * F1[0] * np.matrix([[0, 2 * np.cos(k3), -2 * 1j * np.cos(k2)], 
                   [2 * np.cos(k3), 0, 2 * np.cos(k2)], 
                     [2 * 1j * np.cos(k2), 2 * np.cos(k2), 0]]) ;
 
@@ -165,12 +167,49 @@ def HamiltonianMatrixSa2(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
     return 1/2 * DA + Dmu - DH
     
 def HamiltonianMatrixKpi1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
+    k1 = 2 * math.pi*n1/Ns
+    k2 = 2 * math.pi*n2/Ns
+    k3 = k1 + k2 
+    DA = np.zeros((12,12), dtype = complex)
     
-    return np.zeros((12,12),dtype = complex)
+    PA = J * Q * np.matrix([[0, -np.exp(k3 * 1j), 2*np.sin(k1) * 1j, 0, np.exp(-k3 * 1j),0],
+                             [np.exp(-k3 * 1j), 0, -np.exp(-k2 * 1j), -np.exp(k3 * 1j),0, np.exp(k2 * 1j)],
+                              [2 * np.sin(k1) * 1j, np.exp(k2 * 1j), 0, 0, np.exp(k2 * 1j), 0],
+                               [0, np.exp(-k3 * 1j), 0, 0, np.exp(k3 * 1j), -2*np.cos(k1)],
+                                [-np.exp(k3 * 1j), 0 , np.exp(k2 * 1j), - np.exp(-k3 * 1j), 0, -np.exp(-k2 * 1j)],
+                                 [0, np.exp(-k2 * 1j), 0, 2 * np.cos(k1), -np.exp(k2 * 1j), 0]])
+    DA[:6, 6:] = PA
+    DA[6:, :6] = PA.H    
     
+    Dmu = mu * np.identity(12)
+    DH = (H/2) * np.identity(12)
+    DH[6:,6:] = -H * np.identity(6)
+    
+    return -1/2 * DA - DH + Dmu
+
+
+
 def HamiltonianMatrixKpi2(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
-    return np.zeros((12,12),dtype = complex)
+    k1 = 2 * math.pi*n1/Ns
+    k2 = 2 * math.pi*n2/Ns
+    k3 = k1 + k2 
+    DA = np.zeros((12,12), dtype = complex)
+    
+    PA = J * Q * np.matrix([[0, np.exp(k3 * 1j), -2*np.cos(k1) * 1j, 0, np.exp(-k3 * 1j), 0],
+                             [-np.exp(-k3 * 1j), 0, np.exp(-k2 * 1j), -np.exp(k3 * 1j),0, np.exp(k2 * 1j)],
+                              [2 * np.cos(k1) * 1j, -np.exp(k2 * 1j), 0, 0, -np.exp(k2 * 1j), 0],
+                               [0, np.exp(-k3 * 1j), 0, 0, -np.exp(k3 * 1j), -2*np.sin(k1) * 1j],
+                                [-np.exp(k3 * 1j), 0 , np.exp(k2 * 1j), - np.exp(-k3 * 1j), 0, np.exp(-k2 * 1j)],
+                                 [0, -np.exp(-k2 * 1j), 0, -2 * np.sin(k1)*1j, -np.exp(k2 * 1j), 0]])
+    DA[:6, 6:] = PA
+    DA[6:, :6] = PA.H    
+    
+    Dmu = mu * np.identity(12)
+    DH = (H/2) * np.identity(12)
+    DH[6:,6:] = -H * np.identity(6)
+    
+    return -1/2 * DA - DH + Dmu
 
     
 def HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
@@ -215,19 +254,17 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
             result += sum(eig)/2
     
     if ansatz == 'T1' :
-        return result/(Ns**2) +J/2 * 3 *  Q**2  - mu*(1. + kappa) - H/2
+        return result/(Ns**2) +J/2 * 3 *  Q[0]**2  - mu*(1. + kappa) - H/2
     elif ansatz == 'Sa1' or ansatz == 'Sa2' :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
-    else : 
-        return result/(3 * Ns**2) - J/8 * (2 * F1**2+ 2 * F2**2 + 2*-2 * Q**2) - mu*(1.+kappa) - H/2
+    elif ansatz == 'K01' or ansatz == 'K02' : 
+        return result/(3 * Ns**2) + J * Q[0]**2 - mu * (1.+kappa) - H/2
     
     
 def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-     
-     
-     print M
+    
      B = np.matrix(np.identity(dim))
      B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)    
      
@@ -245,15 +282,12 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      
      w = (w.transpose()[order]).transpose()
 
-         
-     
      k1 = [(np.square(np.absolute(w[:dim//2,i]))).sum()-(np.square(np.absolute(w[dim//2: ,i]))).sum() for i in range(dim//2)]
      k2 = [-(np.square(np.absolute(w[:dim//2,i]))).sum()+(np.square(np.absolute(w[dim//2 : ,i]))).sum() for i in range(dim//2,dim)]
     
      k = k1 + k2 
      
 
-     
      U = np.matrix(np.zeros((dim, dim),dtype=complex))  
     
      
@@ -264,15 +298,9 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
          U[:,i] = w[:,i]/np.sqrt(k[i])
          
      
-#     print np.absolute(U[:dim/2,dim/2:]-U[dim/2:,:dim/2])
-     AU = np.absolute(U)
-     
-     
-     if (AU[:3,3:] != AU[3:,:3]).all() :
-         print u
+#     print np.absolute(U[:dim/2,dim/2:]-U[dim/2:,:dim/2]
 #     print np.diagonal(np.dot(np.dot(U.H,M),U))
 #     print np.diagonal(np.dot(np.dot(lin.inv(U),np.dot(B,M)),U))
-     print np.absolute(U),"\n"
      l1 = [(np.square(np.absolute(U[:dim//2,i]))).sum()-(np.square(np.absolute(U[dim//2: ,i]))).sum() for i in range(dim//2)]
      l2 = [-(np.square(np.absolute(U[:dim//2,i]))).sum()+(np.square(np.absolute(U[dim//2 : ,i]))).sum() for i in range(dim//2,dim)]
 #     print l1+l2
@@ -382,7 +410,7 @@ def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
 
 def spectral_gap(Q, F1, F2, H,  kappa, mu,  Ns, ansatz) :
     
-    minim = 100.
+    energies_list = []
         
     for n1 in range(Ns) :
         for n2 in range(Ns) :
@@ -392,11 +420,10 @@ def spectral_gap(Q, F1, F2, H,  kappa, mu,  Ns, ansatz) :
             B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
         
             eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-            m = min(eig)
+            energies_list += eig
             
-            if m < minim :
-                minim = m
-    return minim
+            
+    return min(energies_list)
     
     
     
