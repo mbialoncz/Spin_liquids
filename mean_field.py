@@ -259,8 +259,24 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
     elif ansatz == 'K01' or ansatz == 'K02' : 
         return result/(3 * Ns**2) + J * Q[0]**2 - mu * (1.+kappa) - H/2
+        
+
+def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
+    
+    n1 = Ns * k1/ (2*math.pi)
+    n2 = Ns * k2/ (2*math.pi)
+    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) 
+
+    B = np.identity(dim)
+    B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
+
+    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
+
+    return min(eig)
+            
     
     
+
 def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
@@ -401,7 +417,7 @@ def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     try :
         
          mu = Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz)
-         print Q, mu
+#         print Q, mu
     except np.linalg.LinAlgError :
         return 1e14
     
@@ -420,10 +436,20 @@ def spectral_gap(Q, F1, F2, H,  kappa, mu,  Ns, ansatz) :
             B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
         
             eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-            energies_list += eig
+            energies_list = np.concatenate((eig, energies_list), 0)
             
             
     return min(energies_list)
+    
+def lower_branch(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz):
+    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
+    B = np.identity(dim)
+    B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
+    
+    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
+    return min(eig)
+    
+    
     
     
     
