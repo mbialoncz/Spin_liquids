@@ -259,6 +259,12 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
     elif ansatz == 'K01' or ansatz == 'K02' : 
         return result/(3 * Ns**2) + J * Q[0]**2 - mu * (1.+kappa) - H/2
+
+def dE_dmu(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
+    dmu = 0.000001
+    dE = Energy(Q, F1, F2, H, mu+epsilon, kappa, Ns, ansatz) - Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
+    
+    return dE/dmu
         
 
 def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
@@ -272,7 +278,15 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 
     eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
 
-    return min(eig)
+    return np.sort(eig)[:dim/2]
+    
+def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
+    
+    k1_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
+    k2_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
+    
+    for k1 in k1_values :
+        for k2 in k2_values : 
             
     
     
@@ -407,11 +421,7 @@ def Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz) :
             a = c
             
     return c
-    
-def Metropolis() :
-    pass
-    
-    
+
     
 def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     try :
@@ -441,14 +451,7 @@ def spectral_gap(Q, F1, F2, H,  kappa, mu,  Ns, ansatz) :
             
     return min(energies_list)
     
-def lower_branch(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz):
-    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-    B = np.identity(dim)
-    B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
-    
-    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-    return min(eig)
-    
+
     
     
     

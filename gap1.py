@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Dec  5 18:26:53 2016
+
+@author: mbialoncz
+"""
+
 import numpy as np
 import scipy.linalg as lin
 import scipy.optimize as opt
@@ -11,34 +18,28 @@ from mpl_toolkits.mplot3d import Axes3D
 from mean_field import *
 from pylab import *
 
-
-
-#plot
-#Q_values = np.arange(-3. ,3., 0.1)
-#E_values = [Energia(0 , 5, [q,0],[0,0],0,0,kappa, 6, 'T1') for q in Q_values]
-
-#minimization
-Ns = 12
-
-
-with open('result_T1_12', 'wr') as res : 
-    for kappa in np.arange(1., 1.4, 0.3) :
-        f = lambda x : Energia(0, 5, [x[0],0], [0,0],0,0,kappa, Ns, 'T1')
-        Q0 = [0.2]
-        minim = opt.minimize(f, Q0, method='Nelder-Mead', tol=1e-6)
-        Q_minimal = minim.x[0]
-        mu_minimal  = Bis(0,5,[Q_minimal,0],[0,0],0, 0, kappa, Ns, 'T1')
-    
-        print kappa, Q_minimal, minim.fun
-        res.write(str(kappa) + ' ' + str(Q_minimal) +' ' +str(mu_minimal)+ ' '+ str(minim.fun)+'\n')
-
-
-
+#file contains lines with the data : kappa, Q_minimal, mu_minimal, E_minimal
+with open('resultT11', 'r') as res :
+    results = []
+    for line in res : 
+        print line
+        results.append([float(x) for x in line.split()])
+        
+kappa = results[0][0]
+Q_minimal = results[0][1]
+mu_minimal = results[0][2]
+print dispersion(0.3, 0.5, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'T1')
 
 #computation of spectral gap
 #print spectral_gap([minim.x[0],0],[0,0],0,0,kappa, mu, 6, 'T1')
 
 #partial plots of the brillouin zone
+kx, ky = 0.5,2.0933
+k_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
+omega_1 = lambda k1 : dispersion(k1,ky, [Q_minimal, 0],[0,0],0, 0, mu_minimal, kappa, 6, 'T1')[0]
+omega_1_values = [omega_1(x) for x in k_values]
+plt.plot(k_values, omega_1_values)
+plt.show()
 
 
 
@@ -68,5 +69,3 @@ with open('result_T1_12', 'wr') as res :
 
 #plt.plot(Q_values, E_values)
 #plt.show()
-
-
