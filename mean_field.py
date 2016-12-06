@@ -284,9 +284,13 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 #    
 #    k1_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
 #    k2_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
-#    
+#
+#    val = []    
 #    for k1 in k1_values :
-#        for k2 in k2_values : 
+#        for k2 in k2_values :
+#            val.append([[k1,k2]+dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)])
+    
+            
             
     
     
