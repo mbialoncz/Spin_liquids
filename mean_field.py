@@ -280,15 +280,43 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 
     return np.sort(eig)[:dim/2]
     
-#def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
-#    
-#    k1_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
-#    k2_values = np.linspace(-2*math.pi, 2*math.pi, 1000)
-#
-#    val = []    
-#    for k1 in k1_values :
-#        for k2 in k2_values :
-#            val.append([[k1,k2]+dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)])
+def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
+    
+    if ansatz == 'T1':
+        dim = 2
+    elif ansatz == 'K01' or ansatz == 'K02' :
+        dim = 6
+        
+    
+    elif ansatz == 'Sa1' or ansatz == 'Sa2' :
+        dim = 6
+        
+    
+    
+    elif ansatz == 'Kpi1' or ansatz == 'Kpi2' :
+        dim = 12
+            
+    
+    
+    k1_values = np.linspace(-2*math.pi, 2*math.pi, 10)
+    k2_values = np.linspace(-2*math.pi, 2*math.pi, 10)
+    
+
+    val = []    
+    for k1 in k1_values :
+        for k2 in k2_values :
+            val.append(dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))
+    print val
+    
+    result = []
+    for i in range(int(dim/2)) :
+        result.append([min(val, key = lambda x: x[i]), max(val, key = lambda x: x[i])])
+        
+    return result
+
+    
+    
+    
     
             
             
