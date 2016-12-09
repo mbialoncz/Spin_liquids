@@ -5,6 +5,8 @@ Created on Thu Sep  8 12:47:43 2016
 
 @author: bialonczyk
 """
+
+#this file contains all functions used in computations
 from __future__ import division
 import numpy as np
 import scipy.linalg as lin
@@ -18,6 +20,26 @@ import random
 J=2.0
 
 np.set_printoptions(precision=3, suppress=True)
+
+#meaning of function arguments :
+#- n1, n2 - numbers used to produce wave vector, ki = 2pi * n1/ Ns
+#- Ns - number of cells in one dimension
+#- Q, F1, F2 - lists of ansatz parameters (allow X, Z as well)
+#- mu - chemical potential
+#- kappa - control parameter
+#- H - magnetic field 
+#- ansatz - one of the PSG ansatz : 
+#    - 'T1' - zero flux ansatz for triangular lattice
+#    - 'K01' - zero flux ansatz 1 for Kagome (Q1 = -Q2 state in subir's paper)
+#    - 'K02' - zero-flux state for Kagome (Q1=Q2 in subir's notation)
+#    - 'Kpi1' - pi-flux ansatz 1
+#    - 'Kpi2' - pi-flux ansatz 2 (notation from Visvanath paper)
+#    - 'Sa1', 'Sa2' - ansatze in notation taken from sachdev's paper
+
+
+
+#functions HamiltonianMatrixT1, HamiltonianMatrixK01, HamiltonianMatrixK02, etc 
+#return matrix of hamiltonian in fourier space 
 def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = 2*math.pi*n1/Ns
     k2 = 2*math.pi*n2/Ns
@@ -235,7 +257,7 @@ def HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
         return [HamiltonianMatrixKpi2(n1, n2, Q, F1, F2, H, mu, kappa, Ns),12]
         
 
-                  
+#returns energy depending on ansatz and parameters                  
 def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
     #print Q
@@ -259,70 +281,9 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
     elif ansatz == 'K01' or ansatz == 'K02' : 
         return result/(3 * Ns**2) + J * Q[0]**2 - mu * (1.+kappa) - H/2
-
-def dE_dmu(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    dmu = 0.000001
-    dE = Energy(Q, F1, F2, H, mu+epsilon, kappa, Ns, ansatz) - Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
-    
-    return dE/dmu
         
 
-def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
-    n1 = Ns * k1/ (2*math.pi)
-    n2 = Ns * k2/ (2*math.pi)
-    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) 
-
-    B = np.identity(dim)
-    B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
-
-    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-
-    return np.sort(eig)[:dim/2]
-    
-def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
-    
-    if ansatz == 'T1':
-        dim = 2
-    elif ansatz == 'K01' or ansatz == 'K02' :
-        dim = 6
-        
-    
-    elif ansatz == 'Sa1' or ansatz == 'Sa2' :
-        dim = 6
-        
-    
-    
-    elif ansatz == 'Kpi1' or ansatz == 'Kpi2' :
-        dim = 12
-            
-    
-    
-    k1_values = np.linspace(-2*math.pi, 2*math.pi, 10)
-    k2_values = np.linspace(-2*math.pi, 2*math.pi, 10)
-    
-
-    val = []    
-    for k1 in k1_values :
-        for k2 in k2_values :
-            val.append(dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))
-    print val
-    
-    result = []
-    for i in range(int(dim/2)) :
-        result.append([min(val, key = lambda x: x[i]), max(val, key = lambda x: x[i])])
-        
-    return result
-
-    
-    
-    
-    
-            
-            
-    
-    
-
+#returns Bogolubov matrix for given ansatz and parameters
 def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
@@ -367,7 +328,8 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      l2 = [-(np.square(np.absolute(U[:dim//2,i]))).sum()+(np.square(np.absolute(U[dim//2 : ,i]))).sum() for i in range(dim//2,dim)]
 #     print l1+l2
      return U
-     
+
+#returns average number of particles, basing on the result of Bogolubov transformation     
 def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
     if ansatz == 'T1' :
@@ -389,30 +351,10 @@ def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
             result += U12.sum()+U21.sum()
      
     return np.real(result/(factor * Ns**2))
-    
-def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
-    if ansatz == 'T1' :
-        dim, factor = 2,1
-    elif ansatz in set(['K01','K02','Sa1','Sa2']) :
-        dim, factor = 6, 3
-    else :
-        dim = 12
-    
-    result = 0
-    for n1 in range(Ns) :
-        for n2 in range(Ns) :
-            
-            U = BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-            
-            U12 = np.absolute(U[dim/2:,:dim/2])**2
-            U21 = np.absolute(U[:dim/2,dim/2:])**2
-            
-            result += U12.sum()-U21.sum()
-            
-    return result/(2*factor * Ns**2)  + H/2   
-    
 
+#returns the value of chemical potential mu such that for given mean-field parameters 
+#one has ParticleNumber = kappa
+#method deals with appearing infinities     
 def Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz) :
     
 #     while (ParticleNumber(Q, F1, F2, H, a, kappa, Ns, ansatz) == np.inf or 
@@ -454,7 +396,8 @@ def Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz) :
             
     return c
 
-    
+#returns the energy after adjusting the chemical potential in such way, that
+#ParticleNumber = kappa
 def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     try :
         
@@ -466,22 +409,97 @@ def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     
     return Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
 
-def spectral_gap(Q, F1, F2, H,  kappa, mu,  Ns, ansatz) :
-    
-    energies_list = []
+
         
+#returns the ordered list of bosonic modes computed for a given momentum
+def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
+    
+    n1 = Ns * k1/ (2*math.pi)
+    n2 = Ns * k2/ (2*math.pi)
+    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) 
+
+    B = np.identity(dim)
+    B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
+
+    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
+
+    return np.sort(eig)[:dim/2]
+
+#returns the list of the intervals of all bosonic eigenenergies    
+def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
+    
+    if ansatz == 'T1':
+        dim = 2
+    elif ansatz == 'K01' or ansatz == 'K02' :
+        dim = 6
+        
+    
+    elif ansatz == 'Sa1' or ansatz == 'Sa2' :
+        dim = 6
+        
+    
+    
+    elif ansatz == 'Kpi1' or ansatz == 'Kpi2' :
+        dim = 12
+            
+    
+    
+    k1_values = np.linspace(-2*math.pi, 2*math.pi, 10)
+    k2_values = np.linspace(-2*math.pi, 2*math.pi, 10)
+    
+
+    val = []    
+    for k1 in k1_values :
+        for k2 in k2_values :
+            print [k1,k2]
+            print (mu**2 - (J*Q[0]*(np.sin(k1) + np.sin(k2) + np.sin(-k1-k2)))**2)
+            print dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
+            val.append(np.concatenate(([k1,k2],dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))))
+    
+    
+    result = []
+    for i in range(int(dim/2)) :
+        result.append([min(val, key = lambda x: x[i+2]), max(val, key = lambda x: x[i+2])])
+        
+    return result
+    
+
+
+    
+    
+
+     
+
+    
+def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
+    
+    if ansatz == 'T1' :
+        dim, factor = 2,1
+    elif ansatz in set(['K01','K02','Sa1','Sa2']) :
+        dim, factor = 6, 3
+    else :
+        dim = 12
+    
+    result = 0
     for n1 in range(Ns) :
         for n2 in range(Ns) :
             
-            M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-            B = np.identity(dim)
-            B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
-        
-            eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-            energies_list = np.concatenate((eig, energies_list), 0)
+            U = BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
             
+            U12 = np.absolute(U[dim/2:,:dim/2])**2
+            U21 = np.absolute(U[:dim/2,dim/2:])**2
             
-    return min(energies_list)
+            result += U12.sum()-U21.sum()
+            
+    return result/(2*factor * Ns**2)  + H/2   
+    
+
+
+
+    
+
+
+
     
 
     
