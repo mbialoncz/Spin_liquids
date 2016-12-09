@@ -1,59 +1,64 @@
-import numpy as np
-import scipy.linalg as lin
-import scipy.optimize as opt
+import sys
 import math
 import random
-import matplotlib.pyplot as plt
-import sys
+import numpy as np
 import random as rand
+import scipy.linalg as lin
+import scipy.optimize as opt
+import matplotlib.pyplot as plt
 
 from mean_field import *
 from pylab import *
 
-# generates file 'result_T11_12' with the following structure:
-# kappa  Q_minimal   mu_minimal  E_minimal
-# where Q_minimal , mu_minimal are parameters
-# for which there is minimum of energy for a given kappa an
+def find_q_mu(kappa, Ns):
+    """ Such that energy is minimized """
+    print 'Minimizing energy for kappa:', kappa
+    f = lambda x : Energia(0,
+                           5,
+                           [x[0], 0],
+                           [0, 0],
+                           0,
+                           0,
+                           kappa,
+                           Ns,
+                           'T1')
+    Q0 = [0.2]
+    minim = opt.minimize(f, Q0, method='Nelder-Mead', tol=1e-6)
+    Q_minimal = minim.x[0]
 
-#plot
-#Q_values = np.arange(-3. ,3., 0.1)
-#E_values = [Energia(0 , 5, [q,0],[0,0],0,0,kappa, 6, 'T1') for q in Q_values]
+    print 'Found Q:', Q_minimal
 
-Ns = 12
+    mu_minimal  = Bis(0,
+                      5,
+                      [Q_minimal, 0],
+                      [0, 0],
+                      0,
+                      0,
+                      kappa,
+                      Ns,
+                      'T1')
 
-with open('result_T1_12', 'wr') as res: 
-    for kappa in np.arange(1.2, 1.6, 0.2) :
-        print 'Minimizing energy for kappa:', kappa
-        f = lambda x : Energia(0,
-                               5,
-                               [x[0], 0],
-                               [0, 0],
-                               0,
-                               0,
-                               kappa,
-                               Ns,
-                               'T1')
-        Q0 = [0.2]
-        minim = opt.minimize(f, Q0, method='Nelder-Mead', tol=1e-6)
-        Q_minimal = minim.x[0]
+    print 'Found mu:', mu_minimal
 
-        print 'Found Q:', Q_minimal
+    return Q_minimal, mu_minimal
 
-        mu_minimal  = Bis(0,
-                          5,
-                          [Q_minimal, 0],
-                          [0, 0],
-                          0,
-                          0,
-                          kappa,
-                          Ns,
-                          'T1')
+def minimize_T1():
+    """ Find Q and mu paramters for multiple kappas """
+    # Set some paremeters
+    Ns = 12
+    # Prepare empty file
+    savepath = 'results/T1_{}.dat'.format(Ns)
+    open(savepath, 'w').close()
 
-        print 'Found mu:', mu_minimal
+    # Declare research space
+    kappas = np.arange(1.2, 1.6, 0.2)
+    for kappa in kappas:
+        Q, mu = find_q_mu(kappa, Ns)
 
-        # Save to file
-        scoreline = '{} {} {} {}\n'.format(kappa,
-                                           Q_minimal,
-                                           mu_minimal,
-                                           minim.fun)
-        res.write(scoreline)
+        # Save results at every iteration
+        scoreline = '{} {} {}\n'.format(kappa, Q, mu)
+        with open(savepath, 'a') as fout:
+            fout.write(scoreline)
+
+    return savepath
+

@@ -4,9 +4,10 @@ Created on Tue Dec  6 15:48:16 2016
 
 @author: mbialoncz
 """
-#generates file 'result_K01_6' with the following structure:
-#kappa  Q_minimal   mu_minimal  E_minimal
-#where Q_minimal , mu_minimal are parameters for which there is minimum of energy for a given kappa and ansatz
+# generates file 'result_K01_6' with the following structure:
+# kappa  Q_minimal   mu_minimal  E_minimal
+# where Q_minimal , mu_minimal are parameters
+# for which there is minimum of energy for a given kappa and ansatz
 
 import numpy as np
 import scipy.linalg as lin

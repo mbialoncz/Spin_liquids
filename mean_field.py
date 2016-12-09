@@ -387,7 +387,6 @@ def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     except np.linalg.LinAlgError:
         return 1e14
     
-    
     return Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
         
 #returns the ordered list of bosonic modes computed for a given momentum
