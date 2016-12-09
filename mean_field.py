@@ -102,8 +102,6 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     Dmu = mu * np.identity(6)
     
     return - 1/2 *  DA - DH + Dmu  
-    
-    
 
 def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k1 = math.pi*n1/Ns
@@ -209,10 +207,7 @@ def HamiltonianMatrixKpi1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
     return -1/2 * DA - DH + Dmu
 
-
-
 def HamiltonianMatrixKpi2(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
-    
     k1 = 2 * math.pi*n1/Ns
     k2 = 2 * math.pi*n2/Ns
     k3 = k1 + k2 
@@ -233,9 +228,7 @@ def HamiltonianMatrixKpi2(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
     return -1/2 * DA - DH + Dmu
 
-    
 def HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
     if ansatz == 'T1':
         return [HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns),2]
     elif ansatz == 'K01' :
@@ -256,11 +249,8 @@ def HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     elif ansatz == 'Kpi2' :
         return [HamiltonianMatrixKpi2(n1, n2, Q, F1, F2, H, mu, kappa, Ns),12]
         
-
 #returns energy depending on ansatz and parameters                  
 def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
-    #print Q
     result = 0
 
     for n1 in range(Ns) :
@@ -281,11 +271,9 @@ def Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
         return result/(3 * Ns**2) + J * Q**2 - mu*(1.+kappa) - H/2
     elif ansatz == 'K01' or ansatz == 'K02' : 
         return result/(3 * Ns**2) + J * Q[0]**2 - mu * (1.+kappa) - H/2
-        
 
 #returns Bogolubov matrix for given ansatz and parameters
 def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
      M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
     
      B = np.matrix(np.identity(dim))
@@ -297,9 +285,9 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
          print M
          print n1, n2, Q, F1, F2, H, mu
          raise lin.LinAlgError
-     w=np.matrix(w)     
+     w = np.matrix(w)     
      
-     temp = np.real(np.dot(np.dot(w.H,B),w))
+     temp = np.real(np.dot(np.dot(w.H,B), w))
     # print np.diagonal(temp)
      order = np.argsort(np.diagonal(temp))[::-1]     
      
@@ -310,9 +298,7 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     
      k = k1 + k2 
      
-
      U = np.matrix(np.zeros((dim, dim),dtype=complex))  
-    
      
      for i in range(dim//2) :
          U[:,i] = w[:,i]/(np.sqrt(k[i]))
@@ -320,7 +306,6 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      for i in range(dim//2,dim):
          U[:,i] = w[:,i]/np.sqrt(k[i])
          
-     
 #     print np.absolute(U[:dim/2,dim/2:]-U[dim/2:,:dim/2]
 #     print np.diagonal(np.dot(np.dot(U.H,M),U))
 #     print np.diagonal(np.dot(np.dot(lin.inv(U),np.dot(B,M)),U))
@@ -331,7 +316,6 @@ def BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 
 #returns average number of particles, basing on the result of Bogolubov transformation     
 def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
     if ansatz == 'T1' :
         dim, factor = 2, 1 
     elif ansatz == 'K01' or ansatz == 'K02' or ansatz == 'Sa1' or ansatz == 'Sa2' :
@@ -342,8 +326,16 @@ def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     result = 0
     for n1 in range(Ns) :
         for n2 in range(Ns) :
-            
-            U = BogolubovTransformation(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
+            U = BogolubovTransformation(n1,
+                                        n2,
+                                        Q,
+                                        F1,
+                                        F2,
+                                        H,
+                                        mu,
+                                        kappa,
+                                        Ns,
+                                        ansatz)
             
             U12 = np.absolute(U[dim/2:,:dim/2])**2
             U21 = np.absolute(U[:dim/2,dim/2:])**2
@@ -352,21 +344,11 @@ def ParticleNumber(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
      
     return np.real(result/(factor * Ns**2))
 
-#returns the value of chemical potential mu such that for given mean-field parameters 
-#one has ParticleNumber = kappa
-#method deals with appearing infinities     
+# returns the value of chemical potential mu such that
+# for given mean-field parameters 
+# one has ParticleNumber = kappa
+# method deals with appearing infinities     
 def Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz) :
-    
-#     while (ParticleNumber(Q, F1, F2, H, a, kappa, Ns, ansatz) == np.inf or 
-#             ParticleNumber(Q, F1, F2, H, a, kappa, Ns, ansatz) == np.nan)  : 
-#        
-#        while ParticleNumber(Q, F1, F2, H, b, kappa, Ns, ansatz) < kappa :
-#            b=(a+b)/2
-#        
-#        a = (a+b)/2
-#    
-#    if ParticleNumber(Q, F1, F2, H, a, kappa, Ns, ansatz) <= kappa : 
-#        a = 2*a - b
     c = 0 
     it = 0
 
@@ -391,32 +373,37 @@ def Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz) :
         if (np.sign(ParticleNumber(Q, F1, F2, H, c, kappa, Ns, ansatz) - kappa) == 
                 np.sign(ParticleNumber(Q, F1, F2, H, b, kappa, Ns, ansatz)-kappa)) :
             b = c
-        else : 
+        else: 
             a = c
             
     return c
 
-#returns the energy after adjusting the chemical potential in such way, that
-#ParticleNumber = kappa
+# returns the energy after adjusting the chemical
+# potential in such way, that
+# ParticleNumber = kappa
 def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
-    try :
-        
+    try:
          mu = Bis(a, b, Q, F1, F2, H, kappa, Ns, ansatz)
-#         print Q, mu
-    except np.linalg.LinAlgError :
+    except np.linalg.LinAlgError:
         return 1e14
     
     
     return Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
-
-
         
 #returns the ordered list of bosonic modes computed for a given momentum
 def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
     n1 = Ns * k1/ (2*math.pi)
     n2 = Ns * k2/ (2*math.pi)
-    M, dim = HamiltonianMatrix(n1, n2, Q, F1, F2, H, mu, kappa, Ns, ansatz) 
+    M, dim = HamiltonianMatrix(n1,
+                               n2,
+                               Q,
+                               F1,
+                               F2,
+                               H,
+                               mu,
+                               kappa,
+                               Ns,
+                               ansatz) 
 
     B = np.identity(dim)
     B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
@@ -427,52 +414,46 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
 
 #returns the list of the intervals of all bosonic eigenenergies    
 def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
-    
     if ansatz == 'T1':
         dim = 2
+
     elif ansatz == 'K01' or ansatz == 'K02' :
         dim = 6
-        
     
     elif ansatz == 'Sa1' or ansatz == 'Sa2' :
         dim = 6
-        
-    
     
     elif ansatz == 'Kpi1' or ansatz == 'Kpi2' :
         dim = 12
-            
-    
     
     k1_values = np.linspace(-2*math.pi, 2*math.pi, 10)
     k2_values = np.linspace(-2*math.pi, 2*math.pi, 10)
-    
 
     val = []    
     for k1 in k1_values :
         for k2 in k2_values :
-            print [k1,k2]
-            print (mu**2 - (J*Q[0]*(np.sin(k1) + np.sin(k2) + np.sin(-k1-k2)))**2)
-            print dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-            val.append(np.concatenate(([k1,k2],dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))))
-    
+            value = np.concatenate(([k1,k2],
+                                    dispersion(k1,
+                                               k2,
+                                               Q,
+                                               F1,
+                                               F2,
+                                               H,
+                                               mu,
+                                               kappa,
+                                               Ns,
+                                               ansatz)))
+            val.append(value)
     
     result = []
     for i in range(int(dim/2)) :
-        result.append([min(val, key = lambda x: x[i+2]), max(val, key = lambda x: x[i+2])])
+        score = [min(val, key = lambda x: x[i+2]),
+                 max(val, key = lambda x: x[i+2])]
+        result.append(score)
         
     return result
     
-
-
-    
-    
-
-     
-
-    
 def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
-    
     if ansatz == 'T1' :
         dim, factor = 2,1
     elif ansatz in set(['K01','K02','Sa1','Sa2']) :
@@ -492,27 +473,3 @@ def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
             result += U12.sum()-U21.sum()
             
     return result/(2*factor * Ns**2)  + H/2   
-    
-
-
-
-    
-
-
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
