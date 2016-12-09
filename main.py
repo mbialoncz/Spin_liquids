@@ -1,3 +1,5 @@
+import matplotlib as mpl
+mpl.use('Agg')
 import numpy as np
 import mean_field as mf
 import minimization as mm
@@ -6,11 +8,19 @@ import scipy.optimize as opt
 import matplotlib.pyplot as plt
 
 def main():
+    """ Check everything """
+    ansatzs = ['T1', 'K01']
+    Nss = [8 + it for it in range(4)]
+    kappas = [1.0 + 0.2 * it for it in range(4)]
+    for ansatz in ansatzs:
+        for Ns in Nss:
+            for kappa in kappas:
+                print 'Current parameters:', ansatz, Ns, kappa
+                calculate(ansatz, kappa, Ns)
+
+def calculate(ansatz, kappa, Ns):
     """ MAIN """
     # Prepare parameters
-    Ns = 3
-    kappa = 1.0
-    ansatz = 'K01'
     Q_minimal, mu_minimal = mm.find_q_mu(kappa, Ns, ansatz)
 
     H_values = np.arange(0, 2, 0.01)
@@ -50,17 +60,20 @@ def main():
         # print 'condensate:', v[0]
 
         # normalization factor
-        r = np.abs(v[0][0])**2 + np.abs(v[0][1])**2      
+        r = np.abs(v[0][0])**2 + np.abs(v[0][1])**2  
 
         result = (np.abs(v[0][0])**2 - np.abs(v[0][1])**2)/r
         magnetization_values.append(result)
-        
-    savepath = 'magnetization-{}'.format(ansatz)
-    plt.plot(H_values, magnetization_values)
+
+    title = 'ansats-{}-kappa-{}-Ns-{}'.format(ansatz, kappa, Ns)
+    savepath = 'tmp/' + title + '.png'
+    plt.plot(H_values, magnetization_values, 'm--o', lw=3, alpha=0.666)
     plt.xlabel('H')
     plt.ylabel('S_z')
+    plt.title(title)
     plt.savefig(savepath)
     plt.show()
+    plt.clf()
 
 if __name__ == '__main__':
     main()
