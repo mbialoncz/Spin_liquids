@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from mean_field import *
 from pylab import *
 
-def find_q_mu(kappa, Ns):
+def find_q_mu(kappa, Ns, ansatz):
     """ Such that energy is minimized """
     print 'Minimizing energy for kappa:', kappa
     f = lambda x : Energia(0,
@@ -21,7 +21,7 @@ def find_q_mu(kappa, Ns):
                            0,
                            kappa,
                            Ns,
-                           'T1')
+                           ansatz)
     Q0 = [0.2]
     minim = opt.minimize(f, Q0, method='Nelder-Mead', tol=1e-6)
     Q_minimal = minim.x[0]
@@ -36,7 +36,7 @@ def find_q_mu(kappa, Ns):
                       0,
                       kappa,
                       Ns,
-                      'T1')
+                      ansatz)
 
     print 'Found mu:', mu_minimal
 
@@ -46,6 +46,7 @@ def minimize_T1():
     """ Find Q and mu paramters for multiple kappas """
     # Set some paremeters
     Ns = 12
+    ansatz = 'T1'
     # Prepare empty file
     savepath = 'results/T1_{}.dat'.format(Ns)
     open(savepath, 'w').close()
@@ -53,7 +54,7 @@ def minimize_T1():
     # Declare research space
     kappas = np.arange(1.2, 1.6, 0.2)
     for kappa in kappas:
-        Q, mu = find_q_mu(kappa, Ns)
+        Q, mu = find_q_mu(kappa, Ns, ansatz)
 
         # Save results at every iteration
         scoreline = '{} {} {}\n'.format(kappa, Q, mu)

@@ -1,16 +1,17 @@
 import numpy as np
 import mean_field as mf
+import minimization as mm
 import scipy.linalg as lin
 import scipy.optimize as opt
-import minimzation_T1 as mt1
 import matplotlib.pyplot as plt
 
 def main():
     """ MAIN """
     # Prepare parameters
-    Ns = 4
+    Ns = 3
     kappa = 1.0
-    Q_minimal, mu_minimal = mt1.find_q_mu(kappa, Ns)
+    ansatz = 'K01'
+    Q_minimal, mu_minimal = mm.find_q_mu(kappa, Ns, ansatz)
 
     H_values = np.arange(0, 2, 0.01)
     magnetization_values = []
@@ -26,7 +27,7 @@ def main():
                                             mu_minimal,
                                             kappa,
                                             Ns,
-                                            'T1')[0] - H/2)
+                                            ansatz)[0] - H/2)
         sol = opt.minimize(g, [-2.,2.], method = 'Nelder-Mead')
         k_minim = sol.x
         n1 = Ns * k_minim[0]/(2 * np.pi)
@@ -41,7 +42,7 @@ def main():
                                       mu_minimal,
                                       kappa,
                                       Ns,
-                                      'T1')
+                                      ansatz)
         B = np.identity(dim)
         B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
 
@@ -53,15 +54,12 @@ def main():
 
         result = (np.abs(v[0][0])**2 - np.abs(v[0][1])**2)/r
         magnetization_values.append(result)
-
-        # only one condensate 
-        # computing z component of magnetization?
-        print 'Result:', result 
         
+    savepath = 'magnetization-{}'.format(ansatz)
     plt.plot(H_values, magnetization_values)
     plt.xlabel('H')
     plt.ylabel('S_z')
-    plt.savefig('magnetization_triangular')
+    plt.savefig(savepath)
     plt.show()
 
 if __name__ == '__main__':
