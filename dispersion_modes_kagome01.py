@@ -19,16 +19,16 @@ from mean_field import *
 from pylab import *
 
 #file contains lines with the data : kappa, Q_minimal, mu_minimal, E_minimal
-with open('result_K01_6', 'r') as res :
+with open('result_K02_12', 'r') as res :
     results = []
     for line in res : 
         print line
         results.append([float(x) for x in line.split()])
         
-kappa = results[0][0]
-Q_minimal = results[0][1]
-mu_minimal = results[0][2]
-print dispersion(0.3, 0.5, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'K01')
+kappa = results[5][0]
+Q_minimal = results[5][1]
+mu_minimal = results[5][2]
+#print dispersion(0.3, 0.5, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'K02')
 
 #computation of spectral gap
 #print spectral_gap([minim.x[0],0],[0,0],0,0,kappa, mu, 6, 'T1')
@@ -40,4 +40,4 @@ print dispersion(0.3, 0.5, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'K0
 #omega_1_values = [omega_1(x) for x in k_values]
 #plt.plot(k_values, omega_1_values)
 #plt.show()
-print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'K01')
+print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'K02')

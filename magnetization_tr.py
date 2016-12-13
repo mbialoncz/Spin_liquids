@@ -25,13 +25,15 @@ with open('result_T1_12', 'r') as res :
         print line
         results.append([float(x) for x in line.split()])
         
-kappa = results[5][0]
-Q_minimal = results[5][1]
-mu_minimal = results[5][2]
+kappa = results[1][0]
+Q_minimal = results[1][1]
+mu_minimal = results[1][2]
 
 #print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 12, 'T1')
 #print dispersion(-2*math.pi/10, -2*math.pi/10,[Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'T1')
 #print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'T1')
+
+print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'T1')
 
 H_values = np.arange(0,2,0.01)
 magnetization_values = []
@@ -50,7 +52,6 @@ for H in H_values :
     B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
     w, v = lin.eig(np.dot(B,M))
     condensate = v[0]
-    print v[0]
     r = np.abs(v[0][0])**2 + np.abs(v[0][1])**2      #normalization
     magnetization_values.append((np.abs(v[0][0])**2 - np.abs(v[0][1])**2)/r)
     #only one condensate - computing z component of magnetization?

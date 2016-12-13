@@ -55,8 +55,8 @@ def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
 #Q[1] - X real part
 #F1[1] - Z real part
 def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
-    k1 = math.pi*n1/Ns
-    k2 = math.pi*n2/Ns
+    k1 = 2* math.pi*n1/Ns
+    k2 = 2 *math.pi*n2/Ns
     k3 =  k1 + k2
     DH = (H/2)* np.identity(6)
     DH[3:, 3:] = -(H/2) * np.identity(3)
@@ -106,8 +106,8 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
 
 def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
-    k1 = math.pi*n1/Ns
-    k2 = math.pi*n2/Ns
+    k1 = 2*math.pi*n1/Ns
+    k2 = 2*math.pi*n2/Ns
     k3 = k1 + k2 
     DH = (H/2) * np.identity(6)
     DH[3:, 3:] = - (H/2) * np.identity(3)
@@ -138,8 +138,8 @@ def HamiltonianMatrixK02(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     return 1/4 * (DF - DA) - DH + Dmu
     
 def HamiltonianMatrixSa1(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
-    k1 =  math.pi*n1/Ns
-    k2 =  math.pi*n2/Ns
+    k1 =  2*math.pi*n1/Ns
+    k2 =  2*math.pi*n2/Ns
     k3 = - k1 - k2 
     DH = H * np.identity(6)
     DH[3:, 3:] = - H * np.identity(3)
@@ -157,6 +157,7 @@ def HamiltonianMatrixSa1(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
                               [-Q[1] * np.exp(-k1* 1j) - Q[0] * np.exp(k1 * 1j), 0, Q[0] * np.exp(-k2* 1j)+ Q[1] * np.exp(k2 * 1j)],
                                       [Q[0] * np.exp(-k3 * 1j)+ Q[1] * np.exp(k3 * 1j), - Q[1] * np.exp(-k2 * 1j)- Q[0] * np.exp(k2 * 1j), 0]])
     
+
     DA[:3, 3:] = PA2
     DA[3:, :3] = PA2.H
     
@@ -178,7 +179,8 @@ def HamiltonianMatrixSa2(n1, n2, Q, F1, F2, H, mu, kappa, Ns) :
     DA = np.zeros((6,6), dtype = complex)
     PA = J * Q * np.matrix([[0, np.exp(-k1* 1j) - np.exp(k1 * 1j),-np.exp(-k3* 1j) + np.exp(k3 * 1j)],
                               [np.exp(-k1* 1j) - np.exp(k1 * 1j), 0, np.exp(-k2* 1j) - np.exp(k2 * 1j) ],
-                                      [np.exp(-k3* 1j)- np.exp(k3 * 1j), np.exp(-k2 * 1j)- np.exp(k2 * 1j), 0]])    
+                                      [np.exp(-k3* 1j)- np.exp(k3 * 1j), np.exp(-k2 * 1j)- np.exp(k2 * 1j), 0]])
+    
     
     
     DA[:3, 3:] = PA
@@ -421,9 +423,9 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     B = np.identity(dim)
     B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
 
-    eig = np.absolute(np.real(lin.eigvals(np.dot(B,M))))
-
-    return np.sort(eig)[:dim/2]
+    eig = np.real(lin.eigvals(np.dot(B,M)))
+    print np.sort(eig)[dim/2:]
+    return np.sort(eig)[dim/2:]
 
 #returns the list of the intervals of all bosonic eigenenergies    
 def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
@@ -444,31 +446,26 @@ def modes_of_dispersion(Q, F1, F2, H, mu, kappa, Ns, ansatz):
             
     
     
-    k1_values = np.linspace(-2*math.pi, 2*math.pi, 10)
-    k2_values = np.linspace(-2*math.pi, 2*math.pi, 10)
+    k1_values = np.linspace(-2*math.pi, 2*math.pi, 100)
+    k2_values = np.linspace(-2*math.pi, 2*math.pi, 100)
     
 
     val = []    
     for k1 in k1_values :
         for k2 in k2_values :
-            print [k1,k2]
-            print (mu**2 - (J*Q[0]*(np.sin(k1) + np.sin(k2) + np.sin(-k1-k2)))**2)
-            print dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
-            val.append(np.concatenate(([k1,k2],dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))))
+#            print [k1,k2]
+#            print dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz)
+            #val.append(np.concatenate(([k1,k2],dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))))
+             val.append(dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz))
     
     
     result = []
     for i in range(int(dim/2)) :
-        result.append([min(val, key = lambda x: x[i+2]), max(val, key = lambda x: x[i+2])])
+        result.append([min(val, key = lambda x: x[i]), max(val, key = lambda x: x[i])])
         
     return result
     
 
-
-    
-    
-
-     
 
     
 def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
