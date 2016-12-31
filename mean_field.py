@@ -50,6 +50,7 @@ def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     M[0,1] = - J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
     M[1,0] =  J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
     
+    
     return M
 
 #Q[1] - X real part
@@ -101,7 +102,7 @@ def HamiltonianMatrixK01(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     
     Dmu = mu * np.identity(6)
     
-    return - 1/2 *  DA - DH + Dmu  
+    return - 1/2 *  DA + 1/2 * DF - DH + Dmu  
     
     
 
@@ -424,7 +425,7 @@ def dispersion(k1, k2, Q, F1, F2, H, mu, kappa, Ns, ansatz) :
     B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
 
     eig = np.real(lin.eigvals(np.dot(B,M)))
-    print np.sort(eig)[dim/2:]
+#    print np.sort(eig)[dim/2:]
     return np.sort(eig)[dim/2:]
 
 #returns the list of the intervals of all bosonic eigenenergies    

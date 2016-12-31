@@ -19,7 +19,7 @@ from mean_field import *
 from pylab import *
 
 Ns = 12
-with open('result_T1_12', 'r') as res :
+with open('result_K01_12_v2', 'r') as res :
     results = []
     for line in res : 
         print line
@@ -28,41 +28,50 @@ with open('result_T1_12', 'r') as res :
 kappa = results[1][0]
 Q_minimal = results[1][1]
 mu_minimal = results[1][2]
+print 'kappa=', kappa
 
 #print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 12, 'T1')
 #print dispersion(-2*math.pi/10, -2*math.pi/10,[Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'T1')
 #print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, 6, 'T1')
 
-print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'T1')
+#print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'T1')
 
-H_values = np.arange(0,2,0.01)
+H_values = np.arange(0,10,0.1)
 magnetization_values = []
 
 for H in H_values :
     #find the wave vector corresponding to zero mode of energy
-    g = lambda k : np.abs(dispersion(k[0], k[1], [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'T1')[0] - H/2)
+    g = lambda k : np.abs(dispersion(k[0], k[1], [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'K01')[0] - H/2)
+    MINIMAL = 10000
+ #   for _ in range(10) :
+ #   k1 = random.random()
     sol = opt.minimize(g, [-2.,2.], method = 'Nelder-Mead')
     k_minim = sol.x
+    print "solucja", k_minim/math.pi, sol.fun, g([0,0])
 #    print sol.x
 #    print sol.fun
     n1 = Ns * k_minim[0]/(2 * math.pi)
     n2 = Ns * k_minim[1]/(2 * math.pi)
-    M, dim = HamiltonianMatrix(n1, n2, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'T1')
+    M, dim = HamiltonianMatrix(n1, n2, [Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'K01')
     B = np.identity(dim)
     B[dim/2:dim, dim/2:dim] = -np.identity(dim/2)
     w, v = lin.eig(np.dot(B,M))
-    print w[0]-H/2
-    condensate = v[0]
-    r = np.abs(v[0][0])**2 + np.abs(v[0][1])**2      #normalization
-    magnetization_values.append((np.abs(v[0][0])**2 - np.abs(v[0][1])**2)/r)
+    print "eigenvalues", w-H/2
+    c = v[2]
+    print c                                        #condensate
+    r = np.sum(np.abs(c)**2)    #normalization
+    m = np.sum(np.abs(c[:3])**2) - np.sum(np.abs(c[3:])**2)
+    magnetization_values.append(m/r)
     #only one condensate - computing z component of magnetization?
-    #print  (np.abs(v[0][0])**2 - np.abs(v[0][1])**2)/r
+    print 'magnetization', m
     
 plt.plot(H_values, magnetization_values)
 plt.xlabel('H')
 plt.ylabel('S_z')
-plt.savefig('magnetization_triangular')
+plt.savefig('magnetization_kagomer')
 plt.show()
+
+print modes_of_dispersion([Q_minimal,0], [0,0], 0, 0, mu_minimal, kappa, Ns, 'K01')
     
     
 
