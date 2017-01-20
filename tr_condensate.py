@@ -53,17 +53,16 @@ def Average_number(Q, F1, x, y, H, mu, kappa, Ns) :
 
 
 
-def Energy_condesate(params, H, Ns, kappa) :
+def Energy_condensate(params, H, kappa, Ns) :
     Q = params[0]
     F1 = params[1]
-    mu = params[2]
-    xc1 = params[3] + params[4] * 1j
-    yc1 = params[5] + params[6] * 1j
-    xc2 = params[7] + params[8] * 1j
-    yc2 = params[9] + params[10] * 1j   
+    xc1 = params[2] + params[3] * 1j
+    yc1 = params[4] + params[5] * 1j
+    xc2 = params[6] + params[7] * 1j
+    yc2 = params[8] + params[9] * 1j   
     
     x = np.zeros(Ns**2)
-    y - np.zeros(Ns**2)
+    y = np.zeros(Ns**2)
     x[Ns**2/3 + Ns/3] = xc1
     y[Ns**2/3 + Ns/3] = yc1
     x[2/3 * Ns**2 + 2/3 * Ns] = xc2
@@ -71,7 +70,7 @@ def Energy_condesate(params, H, Ns, kappa) :
     
         
     
-    return Energy_condensate_general1(Q, F1, x, y, H, mu, kappa, Ns)
+    return Energy_condensate_reduced(Q, F1, x, y, H, kappa, Ns)
     
 def Bis_condensate(a, b, Q, F1, x, y, H, kappa, Ns) :
     
@@ -138,24 +137,31 @@ y0[N**2/3 + N/3] = 1j
 x0[2/3 * N**2 + 2/3 * N] = 1
 y0[2/3 * N**2 + 2/3 * N] = -1j 
 
-f = lambda mu : Energy_condensate_general(Q0, F10, x0, y0, H, mu , kappa, N) 
  
-a = Bis_condensate(0, 5, Q0, F10, x0, y0, 0. , kappa, N)
-print Average_number(Q0, F10, x0, y0, 0., a, kappa, N) 
-
-mu_values = np.arange(5.,10.,0.1)
-
-Q_values = np.arange(-5,5, 1.)
-F_values = np.arange(-0.5,0.5, 0.1)
-particle_values =  [Average_number(Q0, F10, x0, y0, 0., mu, kappa, N) for mu in mu_values]
-Energy_values = [np.abs(Energy_condensate_reduced(Q0, F, x0, y0, 0.0, kappa, N)) for F in F_values]
-#print particle_values
-print Energy_values
+ 
 
 
+params0 = [0.2, 1., 0, 1, 1, 0, 0, -1, 1, 0]
 
-plt.plot(Q_values, Energy_values)
-plt.show() 
+f = lambda params : Energy_condensate(params, 0.2, kappa, N)
+
+solucja = opt.minimize(f, params0, method = 'Nelder-Mead')
+print solucja.x
+
+
+#a = Bis_condensate(0, 5, Q0, F10, x0, y0, 0. , kappa, N)
+#print Average_number(Q0, F10, x0, y0, 0., a, kappa, N) 
+#
+#mu_values = np.arange(5.,10.,0.1)
+#
+#Q_values = np.arange(-5,5, 1.)
+#F_values = np.arange(-0.5,0.5, 0.1)
+#particle_values =  [Average_number(Q0, F10, x0, y0, 0., mu, kappa, N) for mu in mu_values]
+#Energy_values = [np.abs(Energy_condensate_reduced(Q0, F, x0, y0, 0.0, kappa, N)) for F in F_values]
+##print particle_values
+#print Energy_values
+#plt.plot(Q_values, Energy_values)
+#plt.show() 
      
 
      
