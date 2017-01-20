@@ -45,10 +45,10 @@ def HamiltonianMatrixT1(n1, n2, Q, F1, F2, H, mu, kappa, Ns):
     k2 = 2*math.pi*n2/Ns
     k3=-k1-k2
     M = np.zeros((2,2),dtype=complex)
-    M[0,0] = mu + H/2
-    M[1,1] = mu - H/2
-    M[0,1] = - J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
-    M[1,0] =  J * Q[0] * (np.sin(k1)+np.sin(k2)+np.sin(k3)) * 1j
+    M[0,0] = mu - H/2 + 2 * J * F1 * (np.cos(k1) + np.cos(k2) + np.cos(k3))
+    M[1,1] = mu + H/2 + 2 * J * F1 * (np.cos(k1) + np.cos(k2) + np.cos(k3))
+    M[0,1] = - 2 * J * Q * (np.sin(k1)+np.sin(k2) - np.sin(k3)) * 1j
+    M[1,0] =  2 * J * Q * (np.sin(k1)+np.sin(k2) - np.sin(k3)) * 1j
     
     
     return M
@@ -412,6 +412,8 @@ def Energia(a, b, Q, F1, F2, H,  kappa, Ns, ansatz) :
     
     return Energy(Q, F1, F2, H, mu, kappa, Ns, ansatz)
 
+def self_consistant(f, x0) : 
+    return opt.fsolve(f, x0)
 
         
 #returns the ordered list of bosonic modes computed for a given momentum
@@ -491,7 +493,6 @@ def AverageMagnetization(Q, F1, F2, H, mu, kappa, Ns, ansatz) :
             
     return result/(2*factor * Ns**2)  + H/2   
     
-
 
 
     
