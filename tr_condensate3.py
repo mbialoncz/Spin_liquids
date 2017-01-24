@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 17 11:37:13 2017
+Created on Tue Jan 24 22:15:00 2017
 
 @author: mbialoncz
 """
+
 
 from __future__ import division
 import numpy as np
@@ -22,7 +23,11 @@ kappa = 1.3
 def Energy_condensate_full(Q, F1, x, y, H, mu, kappa, Ns) : 
     
     if Q==0 and F1 ==0 :
-        return 1000000000
+        return 1e14
+    
+    m = find_minimum(Q, F1, mu, kappa, Ns)
+    if m[0] < H/2 :
+        return 1e14
     result = 0
     for n1 in range(Ns) : 
         for n2 in range(Ns) : 
@@ -152,100 +157,45 @@ def Average_number1(Q, F1, x, y, H, mu, kappa, Ns) :
              result += a/np.sqrt(a**2 -b**2) + np.abs(x[n1 * Ns + n2])**2 + np.abs(y[n1*Ns + n2])**2
             
      return result/Ns**2 - 1
+     
+def change_parameters(params, H, kappa, Ns) : 
+      
+      x = np.zeros(Ns**2, dtype = complex)
+      y = np.zeros(Ns**2, dtype = complex)
+      
+      for i in range(Ns**2) : 
+           x[i] = params[2*i] + params[2 * i + 1] * (1j)
+      
+      for i in range(Ns**2, 2 * Ns**2) :
+           y[i-Ns**2] = params[2*i] + params[2*i + 1] * (1j)
+       
+      Q = params[4 * Ns**2]
+      F1 = params[4 * Ns**2 + 1]
+      return Energy_condensate_reduced(Q, F1, x, y, H, kappa, Ns)
+
+def check_if_condense(H, kappa, Ns) :
+    f = lambda x : change_parameters(x[0], x[1], H, kappa, Ns)
+    f1 = lambda x : Energy_condensate_reduced(x[0], x[1] , np.zeros(Ns**2, dtype = complex), np.zeros(Ns**2, dtype = complex), H, kappa, Ns)    
+    solucja1 = opt.minimize(f1, 5. , method = 'Nelder-Mead')    
+    energy_without = solucja1.fun
+    print 'energy without condensation = ', solucja1.fun, 'parameter = ', solucja1.x
+#    
+    
+    m = 1e14
+    m_params = np.zeros(4 * Ns**2 + 2)    
+    for _ in range(10) : 
+        params = list(np.random.rand(4*Ns**2)) + [10 * np.random.rand()] + [10 * np.random,rand()]
+        solucja = opt.minimize(f, params, method = 'Nelder-Mead')
+        
+        print 'kappa = ', kappa, 'H = ', H, 'run = ', _ , 'energy = ', solucja.fun, 'param = ', solucja.x
+        
+        if solucja.fun < m :
+            m = solucja.fun
+            m_params = solucja.x
+    
+    print "final solution", m, x
     
 
-x0 = np.zeros(N**2, dtype = complex)
-y0 = np.zeros(N**2, dtype = complex)
-x1 = np.zeros(N**2, dtype = complex)
-y1 = np.zeros(N**2, dtype = complex)
-
-#for n1 in range(N) :
-#    for n2 in range(N) :
-#        x0[N * n1 + n2] = 0
-#        y0[N * n1 + n2] = 0
-
-#x0[N**2/3 + N/3] = np.random.rand() + np.random.rand()*1j
-#y0[N**2/3 + N/3] = np.random.rand() + np.random.rand()*1j
-
-Q0 = 0.2
-F10 = 0.
-mu0 = 2.5
-#x0[N**2/3 + N/3] = 1. 
-#y0[N**2/3 + N/3] = 1j
-#x0[2/3 * N**2 + 2/3 * N] = 1
-#y0[2/3 * N**2 + 2/3 * N] = -1j 
-
-#print find_minimum(Q0, 0.49, mu0 ,kappa, N)
-#print Average_number(Q0, F10, x1, y1, 0., mu0, kappa, N)
-#print Average_number1(Q0, F10, x0, y0, 0., mu0, )
-
-f1 = lambda params1 : Energy_condensate([params1[0], 0, params1[1],params1[2],params1[3],params1[4],params1[5],params1[6],params1[7],params1[8]],0,kappa,N)
-params0 = [0.2, 1., 0, 0, 0, 0, 0, 0, 1, 0]
-
-for kappa in np.arange(0.2, 1.4, 0.2) :
-    m=1000000000
-    po = np.zeros(9)
-    for _ in range(20) :
+if __name__ == "__main__":    
     
-           params01 = [5.] + list(np.random.rand(8))
-           print params01
-           solucja = opt.minimize(f1, params01, method = 'Nelder-Mead')
-           print 'sol' , _, solucja.x, solucja.fun
-           if solucja.fun <= m :
-               po = solucja.x
-               m = solucja.fun
-    print kappa, m, po
-
-print 'result', m
-#
-#f = lambda params : Energy_condensate(params, 0., kappa, N)
-
-#
-#solucja = opt.minimize(f1, params01, method = 'Nelder-Mead')
-#print 'sol' , solucja.x
-#print Average_number(Q0, F10, x0, y0, 0., a, kappa, N) 
-#
-#mu_values = np.arange(1.2,1.5,0.05)
-#print Average_number(Q0, F10,x0,y0,0,1.0311, kappa, N)
-#print Bis_condensate(0, 5, Q0, 0, x0, y0, 0, kappa, N)
-#
-#Q_values = np.arange(-6,6, 0.1)
-#F_values = np.arange(-0.5,0.5, 0.1)
-#particle_values =  [Average_number(Q0, F10, x0, y0, 0., mu, kappa, N) for mu in mu_values]
-#particle_values1 = [Average_number1(Q0, F10, x0, y0, 0., mu, kappa, N) for mu in mu_values]
-#Energy_values = [np.abs(Energy_condensate_reduced(Q, 0, x0, y0, 0.0, kappa, N)) for Q in Q_values]
-##print particle_values
-#print Energy_values
-#mu_v = [Bis_condensate(0,5,Q,0,x0,y0,0,kappa, N) for Q in Q_values]
-#print Bis_condensate(0,5,Q,0,x0,y0,0,kappa, N)
-#print 'av', Average_number1(Q, 0.0,x0,y0, 0, Bis_condensate(0,5,Q,0,x0,y0,0,kappa, N), kappa,N)
-#Energy_values = [np.abs(f1([Q])) for Q in Q_values]
-#plt.plot(Q_values, Energy_values)
-#plt.savefig('dupa1.jpg') 
-     
-
-     
-     
-           
-    
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
- 
-            
-    
+    check_if_condense(sys.argv[1], sys.argv[2], 6)
